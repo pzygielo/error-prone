@@ -17,6 +17,7 @@
 package com.google.errorprone.bugpatterns.inject.dagger;
 
 import static com.google.errorprone.BugPattern.SeverityLevel.ERROR;
+import static com.google.errorprone.util.ASTHelpers.findEnclosingMethod;
 
 import com.google.errorprone.BugPattern;
 import com.google.errorprone.VisitorState;
@@ -28,11 +29,9 @@ import com.google.errorprone.matchers.Description;
 import com.google.errorprone.util.ASTHelpers;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 
 /**
@@ -58,17 +57,9 @@ public class ProvidesNull extends BugChecker implements ReturnTreeMatcher {
       return Description.NO_MATCH;
     }
 
-    TreePath path = state.getPath();
-    MethodTree enclosingMethod = null;
-    while (true) {
-      if (path == null || path.getLeaf() instanceof LambdaExpressionTree) {
-        return Description.NO_MATCH;
-      } else if (path.getLeaf() instanceof MethodTree) {
-        enclosingMethod = (MethodTree) path.getLeaf();
-        break;
-      } else {
-        path = path.getParentPath();
-      }
+    MethodTree enclosingMethod = findEnclosingMethod(state);
+    if (enclosingMethod == null) {
+      return Description.NO_MATCH;
     }
     MethodSymbol enclosingMethodSym = ASTHelpers.getSymbol(enclosingMethod);
 
