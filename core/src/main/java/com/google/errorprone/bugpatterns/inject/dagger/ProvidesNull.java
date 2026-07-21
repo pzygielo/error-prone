@@ -71,9 +71,18 @@ public class ProvidesNull extends BugChecker implements ReturnTreeMatcher {
     if (ASTHelpers.hasDirectAnnotationWithSimpleName(enclosingMethodSym, "Nullable")) {
       return Description.NO_MATCH;
     }
-    // Type-use annotations do *NOT* work with Dagger. See b/117251022
-    // You must use *any* non-type-use Nullable annotation.
 
+    /*
+     * Dagger has support for type-use annotations only under newer compilers with a flag enabled:
+     * https://github.com/google/dagger/releases/tag/dagger-2.60.
+     *
+     * To be safe, we suggest a fix that uses javax.annotations.Nullable.
+     *
+     * TODO: b/117251022 - Once javac and Dagger support type-use annotations more widely, generate
+     * a fix by using fixByAddingNullableAnnotationToReturnType, which uses whichever Nullable the
+     * user is already using and which supports JSpecify (and which might universally prefer it by
+     * default by then) and other type-use annotations.
+     */
     Fix addNullableFix =
         SuggestedFix.builder()
             .prefixWith(enclosingMethod, "@Nullable\n")
