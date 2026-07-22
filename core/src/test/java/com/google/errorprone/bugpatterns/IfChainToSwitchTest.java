@@ -4517,16 +4517,14 @@ class Test {
 
   @Test
   public void ifChain_stringConstantOnObjectSubject_noError() {
-    // BUG: This example is NOT actually convertible, because the compiler won't allow a String to
-    // be used when the switch subject is an Object (even though a String can normally be assigned
-    // to an Object)
-    helper
-        .addSourceLines(
+    // String constants are not allowed on Object switch expressions, and more generally, non-null
+    // constants are only allowed with a limited set of types for the switch expression.
+    refactoringHelper
+        .addInputLines(
             "Test.java",
             """
             class Test {
               public void foo(Object o) {
-                // BUG: Diagnostic contains:
                 if (o instanceof String) {
                   System.out.println("string");
                 } else if (o == "a") {
@@ -4539,6 +4537,7 @@ class Test {
               }
             }
             """)
+        .expectUnchanged()
         .setArgs(ENABLE_MAIN, DISABLE_SAFE, MIN_CHAIN_LENGTH_3)
         .doTest();
   }
