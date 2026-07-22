@@ -4515,6 +4515,34 @@ class Test {
         .doTest();
   }
 
+  @Test
+  public void ifChain_stringConstantOnObjectSubject_noError() {
+    // BUG: This example is NOT actually convertible, because the compiler won't allow a String to
+    // be used when the switch subject is an Object (even though a String can normally be assigned
+    // to an Object)
+    helper
+        .addSourceLines(
+            "Test.java",
+            """
+            class Test {
+              public void foo(Object o) {
+                // BUG: Diagnostic contains:
+                if (o instanceof String) {
+                  System.out.println("string");
+                } else if (o == "a") {
+                  System.out.println("a");
+                } else if (o instanceof Integer) {
+                  System.out.println("integer");
+                } else {
+                  System.out.println("default");
+                }
+              }
+            }
+            """)
+        .setArgs(ENABLE_MAIN, DISABLE_SAFE, MIN_CHAIN_LENGTH_3)
+        .doTest();
+  }
+
   /** Substitute underscore for {@code unused} variables, if supported. */
   private static String maybeChangeToUnnamedVariable(String s) {
     if (Runtime.version().feature() >= 22) {
